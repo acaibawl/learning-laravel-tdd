@@ -87,3 +87,7 @@ alter user 'ユーザ名' identified with mysql_native_password by 'パスワー
 ```
 
 
+## ログファイルへの書き込み権限設定
+workspaceコンテナで以下コマンドを実行  
+```chown -R www-data:www-data storage```  
+```chmod -R 777 storage```
