@@ -17,4 +17,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/lessons/{lesson}', 'LessonController@show')->name('lessons.show');
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
+Route::middleware('auth')->group(function() {
+    Route::get('/lessons/{lesson}', 'LessonController@show')->name('lessons.show');
+});
