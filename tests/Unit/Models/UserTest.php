@@ -16,9 +16,9 @@ class UserTest extends TestCase
      * @param integer $remainingCount
      * @param integer $reservationCount
      * @param boolean $canReserve
-     * @dataProvider dataCanReserve
+     * @dataProvider dataCanReserve_正常
      */
-    public function testCanReserve(string $plan, int $remainingCount, int $reservationCount, bool $canReserve)
+    public function testCanReserve_正常(string $plan, int $remainingCount, int $reservationCount)
     {
         /** @var \Mockery\MockInterface $userMockery */
         $userMockery = Mockery::mock(User::class);
@@ -31,41 +31,72 @@ class UserTest extends TestCase
         $lesson = Mockery::mock(Lesson::class);
         $lesson->shouldReceive('remainingCount')->andReturn($remainingCount);
 
-        $this->assertSame($canReserve, $user->canReserve($lesson, $reservationCount));
+        $user->canReserve($lesson);
+        // 例外が出ないことを確認するアサーションがないので代わりに
+        $this->assertTrue(true);
     }
 
-    public function dataCanReserve()
+    public function dataCanReserve_正常()
     {
         return [
-            '予約可：レギュラー,空きあり,月の上限以下' => [
+            '予約可:レギュラー,空きあり,月の上限以下' => [
                 'plan' => 'regular',
                 'remainingCount' => 1,
                 'reservationCount' => 4,
-                'canReserve' => true,
             ],
-            '予約不可：レギュラー,空きあり,月の上限' => [
-                'plan' => 'regular',
-                'remainingCount' => 1,
-                'reservationCount' => 5,
-                'canReserve' => false,
-            ],
-            '予約不可：レギュラー,空きなし' => [
-                'plan' => 'regular',
-                'remainingCount' => 0,
-                'reservationCount' => 0,
-                'canReserve' => false,
-            ],
-            '予約不可：ゴールド,空きあり' => [
+            '予約可:ゴールド,空きあり' => [
                 'plan' => 'gold',
                 'remainingCount' => 1,
                 'reservationCount' => 5,
-                'canReserve' => true,
             ],
-            '予約不可：ゴールド,空きなし' => [
+        ];
+    }
+
+    /**
+     * @param string $plan
+     * @param int $remainingCount
+     * @param int $reservationCount
+     * @param string $errorMessage
+     * @dataProvider dataCanReserve_エラー
+     */
+    public function testCanReserve_エラー(string $plan, int $remainingCount, int $reservationCount, string $errorMessage)
+    {
+        /** @var \Mockery\MockInterface $userMockery */
+        $userMockery = Mockery::mock(User::class);
+        /** @var User|\Mockery\MockInterface $user */
+        $user = $userMockery->makePartial();
+        $user->shouldReceive('reservationCountThisMonth')->andReturn($reservationCount);
+        $user->plan = $plan;
+
+        /** @var Lesson|\Mockery\MockInterface $lesson */
+        $lesson = Mockery::mock(Lesson::class);
+        $lesson->shouldReceive('remainingCount')->andReturn($remainingCount);
+
+        $this->expectExceptionMessage($errorMessage);
+
+        $user->canReserve($lesson);
+    }
+
+    public function dataCanReserve_エラー()
+    {
+        return [
+            '予約不可:レギュラー,空きあり,月の上限' => [
+                'plan' => 'regular',
+                'remainingCount' => 1,
+                'reservationCount' => 5,
+                'errorMessage' => '今月の予約がプランの上限に達しています。',
+            ],
+            '予約不可:レギュラー,空きなし,月の上限以下' => [
+                'plan' => 'regular',
+                'remainingCount' => 0,
+                'reservationCount' => 4,
+                'errorMessage' => 'レッスンの予約可能上限に達しています。',
+            ],
+            '予約不可:ゴールド,空きなし' => [
                 'plan' => 'gold',
                 'remainingCount' => 0,
-                'reservationCount' => 0,
-                'canReserve' => false,
+                'reservationCount' => 5,
+                'errorMessage' => 'レッスンの予約可能上限に達しています。',
             ],
         ];
     }
