@@ -2,8 +2,12 @@
 
 namespace Tests\Unit\Models;
 
+use App\Models\Lesson;
 use App\Models\User;
+use Mockery;
 use PHPUnit\Framework\TestCase;
+// ユニットテストでフレームワークの機能を使えるようにする場合は継承元のクラスを変更する
+// use Tests\TestCase
 
 class UserTest extends TestCase
 {
@@ -16,11 +20,18 @@ class UserTest extends TestCase
      */
     public function testCanReserve(string $plan, int $remainingCount, int $reservationCount, bool $canReserve)
     {
-        /** @var \App\Models\User */
-        $user = new User();
+        /** @var \Mockery\MockInterface $userMockery */
+        $userMockery = Mockery::mock(User::class);
+        /** @var User|\Mockery\MockInterface $user */
+        $user = $userMockery->makePartial();
+        $user->shouldReceive('reservationCountThisMonth')->andReturn($reservationCount);
         $user->plan = $plan;
 
-        $this->assertSame($canReserve, $user->canReserve($remainingCount, $reservationCount));
+        /** @var Lesson $lesson */
+        $lesson = Mockery::mock(Lesson::class);
+        $lesson->shouldReceive('remainingCount')->andReturn($remainingCount);
+
+        $this->assertSame($canReserve, $user->canReserve($lesson, $reservationCount));
     }
 
     public function dataCanReserve()
