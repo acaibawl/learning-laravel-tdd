@@ -4,6 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Lesson;
 use App\Models\User;
+use App\Models\UserProfile;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 // ユニットテストでフレームワークの機能を使えるようにする場合は継承元のクラスを変更する
@@ -25,7 +26,8 @@ class UserTest extends TestCase
         /** @var User|\Mockery\MockInterface $user */
         $user = $userMockery->makePartial();
         $user->shouldReceive('reservationCountThisMonth')->andReturn($reservationCount);
-        $user->plan = $plan;
+        $user->profile = new UserProfile();
+        $user->profile->plan = $plan;
 
         /** @var Lesson $lesson */
         $lesson = Mockery::mock(Lesson::class);
@@ -66,7 +68,8 @@ class UserTest extends TestCase
         /** @var User|\Mockery\MockInterface $user */
         $user = $userMockery->makePartial();
         $user->shouldReceive('reservationCountThisMonth')->andReturn($reservationCount);
-        $user->plan = $plan;
+        $user->profile = new UserProfile();
+        $user->profile->plan = $plan;
 
         /** @var Lesson|\Mockery\MockInterface $lesson */
         $lesson = Mockery::mock(Lesson::class);

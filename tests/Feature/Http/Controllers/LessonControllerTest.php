@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers;
 use App\Models\Lesson;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
@@ -30,11 +31,13 @@ class LessonControllerTest extends TestCase
         for ($i = 0; $i < $reservationCount; $i++) {
             // 同じユーザーが同一のレッスンに予約を入れることができないので、ループ内で毎回 User を生成
             $user = factory(User::class)->create();
+            factory(UserProfile::class)->create(['user_id' => $user->id]);
             $lesson->reservations()->save(factory(Reservation::class)->make(['user_id' => $user]));
         }
 
         // ログイン状態にする
         $user = factory(User::class)->create();
+        factory(UserProfile::class)->create(['user_id' => $user->id]);
         $this->actingAs($user);
 
         // リクエストを発行
