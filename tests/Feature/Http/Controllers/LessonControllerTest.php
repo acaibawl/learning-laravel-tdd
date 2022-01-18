@@ -9,12 +9,14 @@ use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
+use Tests\Factories\Traits\CreatesUser;
 use Tests\TestCase;
 
 class LessonControllerTest extends TestCase
 {
 
     use RefreshDatabase;
+    use CreatesUser;
     
     /**
      * @param integer $capacity
@@ -36,8 +38,7 @@ class LessonControllerTest extends TestCase
         }
 
         // ログイン状態にする
-        $user = factory(User::class)->create();
-        factory(UserProfile::class)->create(['user_id' => $user->id]);
+        $user = $this->createUser();
         $this->actingAs($user);
 
         // リクエストを発行
